@@ -7,7 +7,7 @@ function LandingPage() {
 
   return (
     <div className="landing-container">
-      <h1 className="landing-title">Yer Actual Acol</h1>
+      <h1 className="landing-title">Yer Aktual Acol</h1>
       <img 
         src="/logo.png/Ace-of-Spades (1).png"  // This path will reference the file in your public folder
         alt="Acol Bridge Logo"
