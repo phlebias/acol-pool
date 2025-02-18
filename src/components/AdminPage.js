@@ -55,7 +55,6 @@ function AdminPage() {
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
-    
     try {
       await deleteDoc(doc(firestore, formData.collection, deleteConfirm.id));
       fetchItems(formData.collection);
@@ -69,7 +68,6 @@ function AdminPage() {
   return (
     <div className="admin-container">
       <h1 className="admin-title">Admin Panel</h1>
-      
       <form className="admin-form" onSubmit={handleSubmit}>
         <select
           className="admin-select"
@@ -80,7 +78,6 @@ function AdminPage() {
           <option value="conventions">Conventions</option>
           <option value="rules">Rules</option>
         </select>
-
         <input
           className="admin-input"
           type="text"
@@ -88,24 +85,21 @@ function AdminPage() {
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
         />
-
         <textarea
           className="admin-textarea"
           placeholder="Text (Use • at the start of a line for bullet points)"
           value={formData.text}
           onChange={(e) => setFormData({ ...formData, text: e.target.value })}
         />
-
         <button type="submit" className="btn submit-btn">Add Item</button>
       </form>
-
       <div className="items-list-container">
         <h2 className="items-title">Current Items</h2>
         <div className="items-grid">
           {items.map(item => (
             <div key={item.id} className="item-card">
               <h3 className="item-name">{item.name}</h3>
-              <button 
+              <button
                 className="btn delete-btn"
                 onClick={() => initiateDelete(item)}
               >
@@ -115,7 +109,6 @@ function AdminPage() {
           ))}
         </div>
       </div>
-
       {deleteConfirm && (
         <div className="delete-modal-overlay">
           <div className="delete-modal">
@@ -123,13 +116,13 @@ function AdminPage() {
             <p>Are you sure you want to delete "{deleteConfirm.name}"?</p>
             <p className="delete-warning">This action cannot be undone!</p>
             <div className="delete-modal-buttons">
-              <button 
+              <button
                 className="btn cancel-btn"
                 onClick={cancelDelete}
               >
                 Cancel
               </button>
-              <button 
+              <button
                 className="btn confirm-delete-btn"
                 onClick={confirmDelete}
               >
@@ -139,8 +132,7 @@ function AdminPage() {
           </div>
         </div>
       )}
-
-      <button 
+      <button
         className="btn back-btn"
         onClick={() => navigate('/main')}
       >
