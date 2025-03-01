@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
-import firestore from '../firebase';
+import { collection, addDoc, deleteDoc, doc, getDocs, serverTimestamp } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { firestore, auth } from '../firebase';
 import './AdminPage.css';
 
 function AdminPage() {
   const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: ''
+  });
   const [formData, setFormData] = useState({
     collection: 'keyIdeas',
     name: '',
@@ -13,6 +20,16 @@ function AdminPage() {
   });
   const [items, setItems] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [userEmail, setUserEmail] = useState('');
+  const audioRef = useRef(new Audio('/sounds/shuffle.mp3')); // Create a reference to the audio element
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user);
+      setUserEmail(user?.email || '');
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     fetchItems(formData.collection);
@@ -34,14 +51,43 @@ function AdminPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Ensure the user is authenticated
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       await addDoc(collection(firestore, formData.collection), {
         name: formData.name,
-        text: formData.text
+        text: formData.text,
+        userId: user.uid,
+        timestamp: serverTimestamp()
       });
       setFormData({ ...formData, name: '', text: '' });
       fetchItems(formData.collection);
     } catch (error) {
       console.error('Error adding document:', error);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      await signInWithEmailAndPassword(auth, loginData.email, loginData.password);
+      setIsAuthenticated(true); // Set isAuthenticated to true upon successful login
+      setLoginError('');
+    } catch (error) {
+      setLoginError('Invalid credentials. Please try again.');
+      console.error('Login error:', error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      navigate('/main');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
@@ -65,9 +111,76 @@ function AdminPage() {
     }
   };
 
+  const playSound = () => {
+    const audio = audioRef.current;
+    console.log('Attempting to play sound...');
+    
+    audio.play()
+      .then(() => {
+        console.log('Sound played successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to play sound:', error);
+      });
+  };
+
+  // Test the audio loading
+  useEffect(() => {
+    const audio = audioRef.current;
+    audio.addEventListener('loadeddata', () => {
+      console.log('Audio file loaded successfully');
+    });
+    audio.addEventListener('error', (e) => {
+      console.error('Audio loading error:', e);
+    });
+  }, []);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="admin-login-container">
+        <h1 className="admin-title">Admin Login</h1>
+        <form className="admin-login-form" onSubmit={handleLogin}>
+          <input
+            className="admin-login-input"
+            type="email"
+            placeholder="Admin Email"
+            value={loginData.email}
+            onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+            required
+          />
+          <input
+            className="admin-login-input"
+            type="password"
+            placeholder="Password"
+            value={loginData.password}
+            onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+            required
+          />
+          {loginError && <p className="error-message">{loginError}</p>}
+          <button type="submit" className="login-btn">Login</button>
+        </form>
+        <button
+          className="btn back-btn"
+          onClick={() => navigate('/main')}
+          style={{ marginTop: '1rem' }}
+        >
+          Back to Main Page
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-container">
-      <h1 className="admin-title">Admin Panel</h1>
+      <div className="admin-header">
+        <h1 className="admin-title">Admin Panel</h1>
+        <div className="user-info">
+          <span>Logged in as: {userEmail}</span>
+          <button className="btn sign-out-btn" onClick={handleSignOut}>
+            Sign Out
+          </button>
+        </div>
+      </div>
       <form className="admin-form" onSubmit={handleSubmit}>
         <select
           className="admin-select"
@@ -138,6 +251,7 @@ function AdminPage() {
       >
         Back to Main Page
       </button>
+      <button onClick={playSound}>Play Shuffle Sound</button> {/* Button to trigger sound */}
     </div>
   );
 }
