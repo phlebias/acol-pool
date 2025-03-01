@@ -43,8 +43,7 @@ function MainPage() {
     fetchData();
   }, []);
 
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                      window.location.hostname === '127.0.0.1';
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   return (
     <div className="main-container">
@@ -100,7 +99,7 @@ function MainPage() {
         </section>
       </div>
 
-      {isLocalhost && (
+      {isDevelopment && (
         <button 
           className="btn admin-btn"
           onClick={() => navigate('/admin')}
