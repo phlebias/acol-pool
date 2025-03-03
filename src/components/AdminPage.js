@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
 import firestore from '../firebase';
+import { playButtonSound } from '../utils/sound';
 import './AdminPage.css';
 
 function AdminPage() {
@@ -14,9 +15,21 @@ function AdminPage() {
   const [items, setItems] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Check if admin features are enabled
+  const isAdmin = process.env.REACT_APP_IS_ADMIN === "true";
+
   useEffect(() => {
-    fetchItems(formData.collection);
-  }, [formData.collection]);
+    if (!isAdmin) {
+      // Redirect non-admin users away from this page
+      navigate('/');
+    }
+  }, [isAdmin, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchItems(formData.collection);
+    }
+  }, [formData.collection, isAdmin]);
 
   const fetchItems = async (collectionName) => {
     try {
@@ -33,6 +46,7 @@ function AdminPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    playButtonSound();
     try {
       await addDoc(collection(firestore, formData.collection), {
         name: formData.name,
@@ -46,15 +60,18 @@ function AdminPage() {
   };
 
   const initiateDelete = (item) => {
+    playButtonSound();
     setDeleteConfirm(item);
   };
 
   const cancelDelete = () => {
+    playButtonSound();
     setDeleteConfirm(null);
   };
 
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
+    playButtonSound();
     try {
       await deleteDoc(doc(firestore, formData.collection, deleteConfirm.id));
       fetchItems(formData.collection);
@@ -65,6 +82,14 @@ function AdminPage() {
     }
   };
 
+  const handleNavigate = (path) => {
+    playButtonSound();
+    navigate(path);
+  };
+
+  // If not an admin, don't render anything (just in case)
+  if (!isAdmin) return null;
+
   return (
     <div className="admin-container">
       <h1 className="admin-title">Admin Panel</h1>
@@ -72,7 +97,10 @@ function AdminPage() {
         <select
           className="admin-select"
           value={formData.collection}
-          onChange={(e) => setFormData({ ...formData, collection: e.target.value })}
+          onChange={(e) => {
+            playButtonSound();
+            setFormData({ ...formData, collection: e.target.value });
+          }}
         >
           <option value="keyIdeas">Key Ideas</option>
           <option value="conventions">Conventions</option>
@@ -132,14 +160,17 @@ function AdminPage() {
           </div>
         </div>
       )}
-      <button
-        className="btn back-btn"
-        onClick={() => navigate('/main')}
-      >
-        Back to Main Page
-      </button>
+      {isAdmin && process.env.REACT_APP_IS_ADMIN === "true" && process.env.NODE_ENV === 'development' && (
+        <button
+          className="btn back-btn"
+          onClick={() => handleNavigate('/main')}
+        >
+          Back to Main Page
+        </button>
+      )}
     </div>
   );
 }
 
 export default AdminPage;
+
