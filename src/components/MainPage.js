@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import firestore from '../firebase';
+import { playButtonSound } from '../utils/sound';
 import './MainPage.css';
 
 function MainPage() {
@@ -43,12 +44,18 @@ function MainPage() {
     fetchData();
   }, []);
 
-  const isLocalhost = window.location.hostname === 'localhost' || 
-                      window.location.hostname === '127.0.0.1';
+  const handleButtonClick = (path) => {
+    playButtonSound();
+    navigate(path);
+  };
+
+  const isAdmin = process.env.REACT_APP_IS_ADMIN === "true";
 
   return (
     <div className="main-container">
-      <h1 className="main-title">Bridge Reference Guide</h1>
+      <div className="copyright-notice">
+        <p>The summaries in the Rules section are based on the Blue Book and White Book published by the English Bridge Union (© The English Bridge Union Ltd, 2023). These summaries are unofficial and provided for informational purposes only. For the full and official rules, please refer to the EBU's website at <a href="http://www.ebu.co.uk" target="_blank" rel="noopener noreferrer">www.ebu.co.uk</a></p>
+      </div>
       
       <div className="sections-grid">
         <section className="main-section">
@@ -58,7 +65,7 @@ function MainPage() {
               <div key={item.id} className="item">
                 <button 
                   className="btn item-btn"
-                  onClick={() => navigate(`/content/keyIdeas/${item.id}`)}
+                  onClick={() => handleButtonClick(`/content/keyIdeas/${item.id}`)}
                 >
                   {item.name}
                 </button>
@@ -74,7 +81,7 @@ function MainPage() {
               <div key={item.id} className="item">
                 <button 
                   className="btn item-btn"
-                  onClick={() => navigate(`/content/conventions/${item.id}`)}
+                  onClick={() => handleButtonClick(`/content/conventions/${item.id}`)}
                 >
                   {item.name}
                 </button>
@@ -90,7 +97,7 @@ function MainPage() {
               <div key={item.id} className="item">
                 <button 
                   className="btn item-btn"
-                  onClick={() => navigate(`/content/rules/${item.id}`)}
+                  onClick={() => handleButtonClick(`/content/rules/${item.id}`)}
                 >
                   {item.name}
                 </button>
@@ -100,10 +107,10 @@ function MainPage() {
         </section>
       </div>
 
-      {isLocalhost && (
+      {isAdmin && (
         <button 
           className="btn admin-btn"
-          onClick={() => navigate('/admin')}
+          onClick={() => handleButtonClick('/admin')}
         >
           Admin Page
         </button>
