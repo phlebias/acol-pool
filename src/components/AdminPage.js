@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
-import firestore from '../firebase';
+import { firestore } from '../firebase';
 import { playButtonSound } from '../utils/sound';
 import './AdminPage.css';
 
