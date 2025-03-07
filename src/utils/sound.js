@@ -1,5 +1,5 @@
 // Sound utility for playing button click sounds
-const buttonSound = new Audio('/sounds/button-click.mp3');
+const buttonSound = new Audio(process.env.PUBLIC_URL + '/sounds/button-click.mp3');
 
 export const playButtonSound = () => {
     buttonSound.currentTime = 0; // Reset the audio to start
