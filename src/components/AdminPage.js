@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
-import { firestore } from '../firebase';
+import { firestore, auth } from '../firebase';
 import { playButtonSound } from '../utils/sound';
 import './AdminPage.css';
 
@@ -15,21 +15,25 @@ function AdminPage() {
   const [items, setItems] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // Check if admin features are enabled
-  const isAdmin = process.env.REACT_APP_IS_ADMIN === "true";
-
   useEffect(() => {
-    if (!isAdmin) {
-      // Redirect non-admin users away from this page
-      navigate('/');
-    }
-  }, [isAdmin, navigate]);
+    // Check if user is authenticated and has admin privileges
+    const checkAdmin = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        navigate('/login');
+        return;
+      }
 
-  useEffect(() => {
-    if (isAdmin) {
-      fetchItems(formData.collection);
-    }
-  }, [formData.collection, isAdmin]);
+      const tokenResult = await user.getIdTokenResult();
+      if (!tokenResult.claims.admin) {
+        navigate('/login');
+      } else {
+        fetchItems(formData.collection);
+      }
+    };
+
+    checkAdmin();
+  }, [navigate, formData.collection]);
 
   const fetchItems = async (collectionName) => {
     try {
@@ -81,14 +85,6 @@ function AdminPage() {
       setDeleteConfirm(null);
     }
   };
-
-  const handleNavigate = (path) => {
-    playButtonSound();
-    navigate(path);
-  };
-
-  // If not an admin, don't render anything (just in case)
-  if (!isAdmin) return null;
 
   return (
     <div className="admin-container">
@@ -159,14 +155,6 @@ function AdminPage() {
             </div>
           </div>
         </div>
-      )}
-      {isAdmin && process.env.REACT_APP_IS_ADMIN === "true" && process.env.NODE_ENV === 'development' && (
-        <button
-          className="btn back-btn"
-          onClick={() => handleNavigate('/main')}
-        >
-          Back to Main Page
-        </button>
       )}
     </div>
   );
