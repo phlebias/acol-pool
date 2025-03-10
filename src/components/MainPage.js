@@ -49,7 +49,9 @@ function MainPage() {
     navigate(path);
   };
 
-  const isAdmin = process.env.REACT_APP_IS_ADMIN === "true";
+  const goToAdmin = () => {
+    window.location.href = '/admin';
+  };
 
   return (
     <div className="main-container">
@@ -107,12 +109,14 @@ function MainPage() {
         </section>
       </div>
 
-      {isAdmin && (
+      {/* Admin button for development mode */}
+      {process.env.NODE_ENV === 'development' && (
         <button 
           className="btn admin-btn"
-          onClick={() => handleButtonClick('/admin')}
+          onClick={goToAdmin}
+          style={{ marginTop: '20px', backgroundColor: '#28a745' }}
         >
-          Admin Page
+          Go to Admin Page
         </button>
       )}
     </div>

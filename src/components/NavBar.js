@@ -1,37 +1,35 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebase';
 import { playButtonSound } from '../utils/sound';
 import './NavBar.css';
 
-function NavBar({ user, isAdmin }) {
+function NavBar({ isAuthenticated }) {
   const navigate = useNavigate();
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     playButtonSound();
-    try {
-      await signOut(auth);
-      navigate('/main');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    localStorage.removeItem('hasAccess');
+    navigate('/');
+  };
+
+  const goToAdmin = () => {
+    window.location.href = '/admin';
   };
 
   return (
     <nav className="navbar">
       <div className="nav-links">
-        <Link to="/main" className="nav-link" onClick={() => playButtonSound()}>Home</Link>
-        {!user && (
-          <Link to="/login" className="nav-link" onClick={() => playButtonSound()}>Admin Login</Link>
-        )}
-        {isAdmin && (
-          <Link to="/admin" className="nav-link" onClick={() => playButtonSound()}>Admin Panel</Link>
-        )}
-        {user && (
-          <button onClick={handleLogout} className="nav-link logout-btn">
-            Logout
-          </button>
+        {isAuthenticated && (
+          <>
+            <Link to="/main" className="nav-link" onClick={() => playButtonSound()}>Home</Link>
+            {isDevelopment && (
+              <button className="nav-link" onClick={goToAdmin}>Admin Panel</button>
+            )}
+            <button onClick={handleLogout} className="nav-link logout-btn">
+              Logout
+            </button>
+          </>
         )}
       </div>
     </nav>

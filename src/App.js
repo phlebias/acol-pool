@@ -1,59 +1,92 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase';
 import LandingPage from './components/LandingPage';
 import MainPage from './components/MainPage';
 import ContentPage from './components/ContentPage';
 import AdminPage from './components/AdminPage';
-import AdminLogin from './components/AdminLogin';
+import UserLogin from './components/UserLogin';
 import NavBar from './components/NavBar';
+import { FEATURES } from './config';
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const requireLogin = FEATURES.REQUIRE_LOGIN;
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const tokenResult = await user.getIdTokenResult();
-        setIsAdmin(tokenResult.claims.admin === true);
-      } else {
-        setIsAdmin(false);
+    // Check if user has entered the correct password
+    const checkAuth = () => {
+      const hasAccess = localStorage.getItem('hasAccess') === 'true';
+      console.log('Checking auth:', { 
+        hasAccess, 
+        localStorage: localStorage.getItem('hasAccess'),
+        requireLogin: requireLogin,
+        isDevelopment
+      });
+      
+      // In production, verify that authentication is required
+      if (!isDevelopment && !requireLogin) {
+        console.warn('Login should be required in production!');
       }
-      setUser(user);
-      setLoading(false);
-    });
+      
+      setIsAuthenticated(hasAccess);
+      setIsLoading(false);
+    };
+    checkAuth();
+  }, [isDevelopment, requireLogin]);
 
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
+  // If login is not required or in development mode, consider everyone authenticated
+  // In production, always require authentication if REQUIRE_LOGIN is true
+  const isUserAuthenticated = 
+    (isDevelopment && !requireLogin) || // Development without login requirement
+    isAuthenticated; // User is authenticated
+
   return (
     <Router>
-      <NavBar user={user} isAdmin={isAdmin} />
+      <NavBar isAuthenticated={isUserAuthenticated} />
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/main" element={<MainPage />} />
-        <Route path="/content/:collection/:id" element={<ContentPage />} />
-        <Route path="/login" element={<AdminLogin />} />
-
-        {/* Protected admin route */}
-        <Route
-          path="/admin"
+        <Route 
+          path="/login" 
           element={
-            isAdmin ? (
-              <AdminPage />
+            isUserAuthenticated ? (
+              <Navigate to="/main" replace />
+            ) : (
+              <UserLogin />
+            )
+          } 
+        />
+
+        {/* Protected routes */}
+        <Route
+          path="/main"
+          element={
+            isUserAuthenticated ? (
+              <MainPage />
             ) : (
               <Navigate to="/login" replace />
             )
           }
         />
+        <Route
+          path="/content/:collection/:id"
+          element={
+            isUserAuthenticated ? (
+              <ContentPage />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+
+        {/* Admin route */}
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </Router>
   );

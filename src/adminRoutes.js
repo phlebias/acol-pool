@@ -1,8 +1,9 @@
 import AdminPage from './components/AdminPage';
 import { Navigate } from 'react-router-dom';
+import { FEATURES } from './config';
 
-// Only export admin routes if not in production
-const adminRoutes = process.env.NODE_ENV !== 'production' ? [
+// Only export admin routes if admin is enabled
+const adminRoutes = FEATURES.SHOW_ADMIN ? [
   { path: '/login', element: <AdminPage /> },
   { path: '/admin', element: <AdminPage /> }
 ] : [

@@ -9,16 +9,18 @@ function LandingPage() {
     <div className="landing-container">
       <h1 className="landing-title">Yer Aktual Acol</h1>
       <img 
-        src="/logo.png/Ace-of-Spades (1).png"  // This path will reference the file in your public folder
+        src="/logo.png/Ace-of-Spades (1).png"
         alt="Acol Bridge Logo"
         className="landing-logo spin"
       />
-      <button 
-        className="btn landing-btn"
-        onClick={() => navigate('/main')}
-      >
-        Enter
-      </button>
+      <div className="landing-buttons">
+        <button 
+          className="btn landing-btn"
+          onClick={() => navigate('/login')}
+        >
+          Login to Access Content
+        </button>
+      </div>
     </div>
   );
 }
