@@ -56,6 +56,15 @@ service cloud.firestore {
                   && isValidSize()
                   && hasValidContent());
     }
+    
+    match /test/{document} {
+      allow read, write: if true;  // Allow all operations on test collection
+    }
+    
+    // Default rule - deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
   }
 }
 

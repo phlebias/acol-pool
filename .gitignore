@@ -30,3 +30,7 @@ firebase-debug.log*
 node_modules
 .env
 build
+
+# Service account keys
+/keys/
+*.json.key

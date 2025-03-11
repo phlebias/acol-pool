@@ -7,6 +7,8 @@ import AdminPage from './components/AdminPage';
 import UserLogin from './components/UserLogin';
 import NavBar from './components/NavBar';
 import { FEATURES } from './config';
+import { firestore } from './firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -18,12 +20,6 @@ function App() {
     // Check if user has entered the correct password
     const checkAuth = () => {
       const hasAccess = localStorage.getItem('hasAccess') === 'true';
-      console.log('Checking auth:', { 
-        hasAccess, 
-        localStorage: localStorage.getItem('hasAccess'),
-        requireLogin: requireLogin,
-        isDevelopment
-      });
       
       // In production, verify that authentication is required
       if (!isDevelopment && !requireLogin) {
@@ -33,6 +29,7 @@ function App() {
       setIsAuthenticated(hasAccess);
       setIsLoading(false);
     };
+    
     checkAuth();
   }, [isDevelopment, requireLogin]);
 
@@ -44,7 +41,7 @@ function App() {
   // In production, always require authentication if REQUIRE_LOGIN is true
   const isUserAuthenticated = 
     (isDevelopment && !requireLogin) || // Development without login requirement
-    isAuthenticated; // User is authenticated
+    isAuthenticated;
 
   return (
     <Router>
