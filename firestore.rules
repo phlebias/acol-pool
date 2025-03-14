@@ -20,41 +20,29 @@ service cloud.firestore {
              request.headers.origin == 'http://localhost:5000';
     }
 
-    // Collection-specific rules with environment detection
+    // Collection-specific rules
     match /keyIdeas/{document} {
       allow read: if true;  // Anyone can read
-      
-      // In development mode, allow all writes
-      // In production mode, require admin authentication
-      allow write: if request.resource.data.keys().hasAny(['__dev_mode__']) || 
-                  (request.auth != null 
+      allow write: if request.auth != null 
                   && request.auth.token.admin == true
                   && isValidSize()
-                  && hasValidContent());
+                  && hasValidContent();
     }
     
     match /conventions/{document} {
       allow read: if true;  // Anyone can read
-      
-      // In development mode, allow all writes
-      // In production mode, require admin authentication
-      allow write: if request.resource.data.keys().hasAny(['__dev_mode__']) || 
-                  (request.auth != null 
+      allow write: if request.auth != null 
                   && request.auth.token.admin == true
                   && isValidSize()
-                  && hasValidContent());
+                  && hasValidContent();
     }
     
     match /rules/{document} {
       allow read: if true;  // Anyone can read
-      
-      // In development mode, allow all writes
-      // In production mode, require admin authentication
-      allow write: if request.resource.data.keys().hasAny(['__dev_mode__']) || 
-                  (request.auth != null 
+      allow write: if request.auth != null 
                   && request.auth.token.admin == true
                   && isValidSize()
-                  && hasValidContent());
+                  && hasValidContent();
     }
     
     match /test/{document} {
