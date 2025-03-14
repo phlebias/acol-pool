@@ -7,8 +7,6 @@ import AdminPage from './components/AdminPage';
 import UserLogin from './components/UserLogin';
 import NavBar from './components/NavBar';
 import { FEATURES } from './config';
-import { firestore } from './firebase';
-import { collection, getDocs } from 'firebase/firestore';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
